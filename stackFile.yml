@@ -1,0 +1,113 @@
+version: '1.0'
+services:
+  - name: redis
+    type: redis
+    version: 3.2
+    remoteAccess: false
+    ports:
+      - 6379
+    deployTo:
+      - sentry
+
+  - name: db
+    type: postgres
+    version: 9.6
+    configuration: StandAlone
+    ports:
+      - 5432
+    env:
+      POSTGRES_USER: sentry
+      POSTGRES_PASSWORD: null
+    remoteAccess: false
+    deployTo:
+      - sentry
+
+  - name: sentry-web
+    type: docker
+    image: sentry
+    version: latest
+    ports:
+      - 9000
+    remoteAccess: false
+    env:
+      SENTRY_SECRET_KEY: "{{=randomString(32)}}"
+      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_USER: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_PASSWORD: "{{=service('db').getEnv('POSTGRES_PASSWORD')}}"
+      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+      SENTRY_USE_SSL: 0
+      ADMIN_EMAIL: null
+      ADMIN_PASS: null
+    volumes:
+      - directory: /var/lib/sentry/files
+    volumesUID: 999
+    initialCommands: |
+      sentry upgrade --noinput
+      sentry createuser  --superuser --email $ADMIN_EMAIL --password $ADMIN_PASS
+    comments:
+      env:
+        ADMIN_EMAIL: Login for a superuser
+        ADMIN_PASS: Password for a superuser
+    deployTo:
+      - sentry
+
+  - name: sentry-cron
+    type: docker
+    image: sentry
+    version: latest
+    ports:
+      - 9000
+    remoteAccess: false
+    env:
+      SENTRY_SECRET_KEY: "{{=service('sentry-web').getEnv('SENTRY_SECRET_KEY')}}"
+      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_USER: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_PASSWORD: "{{=service('db').getEnv('POSTGRES_PASSWORD')}}"
+      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+    startCommand: sentry run cron
+    deployTo:
+      - sentry
+
+  - name: sentry-worker
+    type: docker
+    image: sentry
+    version: latest
+    ports:
+      - 9000
+    remoteAccess: false
+    env:
+      SENTRY_SECRET_KEY: "{{=service('sentry-web').getEnv('SENTRY_SECRET_KEY')}}"
+      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_USER: "{{=service('db').getEnv('POSTGRES_USER')}}"
+      SENTRY_DB_PASSWORD: "{{=service('db').getEnv('POSTGRES_PASSWORD')}}"
+      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+    startCommand: sentry run worker
+    deployTo:
+      - sentry
+
+  - name: web
+    type: nginx
+    version: 1.13
+    ports:
+      - 80
+      - 443
+    remoteAccess: true
+    serviceFiles:
+      - name: sentry-web
+    deployTo:
+      - sentry
+
+hosts:
+  - name: sentry
+    requirements:
+      cores: 1
+      memory: 2
