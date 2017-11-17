@@ -25,7 +25,7 @@ services:
   - name: sentry-web
     type: docker
     image: sentry
-    version: latest
+    version: 8
     ports:
       - 9000
     remoteAccess: false
@@ -57,7 +57,7 @@ services:
   - name: sentry-cron
     type: docker
     image: sentry
-    version: latest
+    version: 8
     ports:
       - 9000
     remoteAccess: false
@@ -77,7 +77,7 @@ services:
   - name: sentry-worker
     type: docker
     image: sentry
-    version: latest
+    version: 8
     ports:
       - 9000
     remoteAccess: false
