@@ -94,18 +94,6 @@ services:
     deployTo:
       - sentry
 
-  - name: web
-    type: nginx
-    version: 1.14
-    ports:
-      - 80
-      - 443
-    remoteAccess: true
-    serviceFiles:
-      - name: sentry-web
-    deployTo:
-      - sentry
-
 hosts:
   - name: sentry
     requirements:
