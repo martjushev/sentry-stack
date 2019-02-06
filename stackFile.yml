@@ -1,6 +1,6 @@
 version: '1.0'
 services:
-  - name: redis
+  - name: sentry-redis
     type: redis
     version: 4.0
     remoteAccess: false
@@ -9,7 +9,7 @@ services:
     deployTo:
       - sentry
 
-  - name: db
+  - name: sentry-db
     type: postgres
     version: 10.4
     configuration: StandAlone
@@ -31,13 +31,13 @@ services:
     remoteAccess: false
     env:
       SENTRY_SECRET_KEY: "{{=randomString(32)}}"
-      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
-      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
-      SENTRY_DB_NAME: "{{=service('db').get('database')}}"
-      SENTRY_DB_USER: "{{=service('db').get('username')}}"
-      SENTRY_DB_PASSWORD: "{{=service('db').get('userPassword')}}"
-      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
-      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+      SENTRY_POSTGRES_HOST: "{{=service('sentry-db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('sentry-db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('sentry-db').get('database')}}"
+      SENTRY_DB_USER: "{{=service('sentry-db').get('username')}}"
+      SENTRY_DB_PASSWORD: "{{=service('sentry-db').get('userPassword')}}"
+      SENTRY_REDIS_HOST: "{{=service('sentry-redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('sentry-redis').getMainPort()}}"
       SENTRY_USE_SSL: 0
       ADMIN_EMAIL: null
       ADMIN_PASS: null
@@ -63,13 +63,13 @@ services:
     remoteAccess: false
     env:
       SENTRY_SECRET_KEY: "{{=service('sentry-web').getEnv('SENTRY_SECRET_KEY')}}"
-      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
-      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
-      SENTRY_DB_NAME: "{{=service('db').get('database')}}"
-      SENTRY_DB_USER: "{{=service('db').get('username')}}"
-      SENTRY_DB_PASSWORD: "{{=service('db').get('userPassword')}}"
-      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
-      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+      SENTRY_POSTGRES_HOST: "{{=service('sentry-db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('sentry-db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('sentry-db').get('database')}}"
+      SENTRY_DB_USER: "{{=service('sentry-db').get('username')}}"
+      SENTRY_DB_PASSWORD: "{{=service('sentry-db').get('userPassword')}}"
+      SENTRY_REDIS_HOST: "{{=service('sentry-redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('sentry-redis').getMainPort()}}"
     startCommand: sentry run cron
     deployTo:
       - sentry
@@ -83,13 +83,13 @@ services:
     remoteAccess: false
     env:
       SENTRY_SECRET_KEY: "{{=service('sentry-web').getEnv('SENTRY_SECRET_KEY')}}"
-      SENTRY_POSTGRES_HOST: "{{=service('db').getMasterAlias()}}"
-      SENTRY_POSTGRES_PORT: "{{=service('db').getMainPort()}}"
-      SENTRY_DB_NAME: "{{=service('db').get('database')}}"
-      SENTRY_DB_USER: "{{=service('db').get('username')}}"
-      SENTRY_DB_PASSWORD: "{{=service('db').get('userPassword')}}"
-      SENTRY_REDIS_HOST: "{{=service('redis').getAppAlias()}}"
-      SENTRY_REDIS_PORT: "{{=service('redis').getMainPort()}}"
+      SENTRY_POSTGRES_HOST: "{{=service('sentry-db').getMasterAlias()}}"
+      SENTRY_POSTGRES_PORT: "{{=service('sentry-db').getMainPort()}}"
+      SENTRY_DB_NAME: "{{=service('sentry-db').get('database')}}"
+      SENTRY_DB_USER: "{{=service('sentry-db').get('username')}}"
+      SENTRY_DB_PASSWORD: "{{=service('sentry-db').get('userPassword')}}"
+      SENTRY_REDIS_HOST: "{{=service('sentry-redis').getAppAlias()}}"
+      SENTRY_REDIS_PORT: "{{=service('sentry-redis').getMainPort()}}"
     startCommand: sentry run worker
     deployTo:
       - sentry
